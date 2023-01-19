@@ -30,5 +30,11 @@
 		"typescript": "^4.9.3",
 		"vite": "^4.0.0"
 	},
-	"type": "module"
+	"type": "module",
+	"dependencies": {
+		"mongodb": "^4.13.0",
+		"mongoose": "^6.8.4",
+		"socket.io": "^4.5.4",
+		"socket.io-client": "^4.5.4"
+	}
 }
