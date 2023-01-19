@@ -46,7 +46,6 @@ async function dbConnect() {
 
 	try {
 		cached.conn = await cached.promise;
-		cached.bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db);
 	} catch (e) {
 		cached.promise = null;
 		throw e;
@@ -56,3 +55,9 @@ async function dbConnect() {
 }
 
 export default dbConnect;
+
+export async function getBucket() {
+	if (!cached.conn) await dbConnect();
+	const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db);
+	return bucket;
+}
