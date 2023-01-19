@@ -1,5 +1,4 @@
-import mongoose from 'mongoose';
-import { GridFSBucket } from 'mongodb';
+import mongoose, { mongo } from 'mongoose';
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
@@ -18,7 +17,7 @@ declare global {
 	var mongoose: {
 		conn: typeof import('mongoose') | null;
 		promise: Promise<typeof import('mongoose')> | null;
-		bucket: GridFSBucket | null;
+		bucket: InstanceType<typeof mongo.GridFSBucket> | null;
 	};
 }
 
@@ -41,11 +40,11 @@ async function dbConnect() {
 		};
 
 		cached.promise = mongoose.connect(MONGODB_URI, opts);
-		mongoose.mongo.GridFSBucket;
 	}
 
 	try {
 		cached.conn = await cached.promise;
+		cached.bucket = new mongo.GridFSBucket(mongoose.connection.db);
 	} catch (e) {
 		cached.promise = null;
 		throw e;
@@ -55,9 +54,3 @@ async function dbConnect() {
 }
 
 export default dbConnect;
-
-export async function getBucket() {
-	if (!cached.conn) await dbConnect();
-	const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db);
-	return bucket;
-}
