@@ -14,38 +14,35 @@ export interface IDirectoryObject {
 export type DirectoryObjectDocument = HydratedDocument<IDirectoryObject, IDirectoryObjectMethods>;
 
 export interface IDirectoryObjectMethods {
-	findChildren(): Promise<DirectoryObjectDocument[]>;
+	findChildren(): Promise<{ [key: string]: DirectoryObjectDocument }>;
 }
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type DirectoryObjectModel = Model<IDirectoryObject, {}, IDirectoryObjectMethods>;
 
-const directoryObjectSchema = new Schema<
-	IDirectoryObject,
-	DirectoryObjectModel,
-	IDirectoryObjectMethods
->({
+const directoryObjectSchema = new Schema({
 	type: { type: String, enum: ['file', 'folder'] },
-	parent: {
-		type: ObjectId,
-		ref: 'DirectoryObject'
-	},
+	parent: ObjectId,
 	name: { type: String, required: true, trim: true },
-	content: {
-		type: Object,
-		get: (data?: Op[] | { ops: Op[] }) => new Delta(data)
-	},
+	// content: {
+	// 	type: Object,
+	// 	get: (data?: Op[] | { ops: Op[] }) => new Delta(data)
+	// },
 	fileId: {
 		type: ObjectId,
 		ref: 'files'
 	}
 });
 
-directoryObjectSchema.method('findChildren', function findChildren() {
-	return mongoose.model<IDirectoryObject>('DirectoryObject').find({ parent: this._id }).exec();
+directoryObjectSchema.method('findChildren', async function findChildren() {
+	const children = await mongoose
+		.model('DirectoryObject')
+		.find({ parent: this._id });
+
+	return Object.fromEntries(children.map((child) => [child.name, child]));
 });
 
-const model: DirectoryObjectModel =
+const DirectoryObject: DirectoryObjectModel =
 	mongoose.models.DirectoryObject || mongoose.model('DirectoryObject', directoryObjectSchema);
 
-export default model;
+export default DirectoryObject;

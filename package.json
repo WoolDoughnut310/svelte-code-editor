@@ -40,6 +40,7 @@
 		"socket.io": "^4.5.4",
 		"socket.io-client": "^4.5.4",
 		"svelte-simple-code-editor": "^0.0.2",
-		"svelte-simple-modal": "^1.5.0"
+		"svelte-simple-modal": "^1.5.0",
+		"yargs": "^17.6.2"
 	}
 }
