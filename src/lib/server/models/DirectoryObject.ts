@@ -1,13 +1,13 @@
 import { ObjectId } from 'mongodb';
 import mongoose, { Model, type HydratedDocument } from 'mongoose';
-import Delta, { Op } from 'quill-delta';
+import type { Op } from 'quill-delta';
 const { Schema } = mongoose;
 
 export interface IDirectoryObject {
 	type: 'file' | 'folder';
 	parent: ObjectId;
 	name: string;
-	content?: Op[] | { ops: Op[] };
+	content?: Op[];
 	fileId?: string;
 }
 
@@ -20,24 +20,29 @@ export interface IDirectoryObjectMethods {
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type DirectoryObjectModel = Model<IDirectoryObject, {}, IDirectoryObjectMethods>;
 
-const directoryObjectSchema = new Schema({
-	type: { type: String, enum: ['file', 'folder'] },
-	parent: ObjectId,
-	name: { type: String, required: true, trim: true },
-	// content: {
-	// 	type: Object,
-	// 	get: (data?: Op[] | { ops: Op[] }) => new Delta(data)
-	// },
-	fileId: {
-		type: ObjectId,
-		ref: 'files'
+const directoryObjectSchema = new Schema<
+	IDirectoryObject,
+	DirectoryObjectModel,
+	IDirectoryObjectMethods
+>(
+	{
+		type: { type: String, enum: ['file', 'folder'] },
+		parent: ObjectId,
+		name: { type: String, required: true, trim: true },
+		content: Object,
+		fileId: {
+			type: ObjectId,
+			ref: 'files'
+		}
+	},
+	{
+		timestamps: true
 	}
-});
+);
 
 directoryObjectSchema.method('findChildren', async function findChildren() {
-	const children = await mongoose
-		.model('DirectoryObject')
-		.find({ parent: this._id });
+	const model: DirectoryObjectModel = mongoose.model('DirectoryObject');
+	const children = await model.find({ parent: this._id });
 
 	return Object.fromEntries(children.map((child) => [child.name, child]));
 });

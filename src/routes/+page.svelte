@@ -1,99 +1,80 @@
 <script lang="ts">
-	import { SimpleCodeEditor } from 'svelte-simple-code-editor';
-	import Prism from 'prismjs';
-	import Delta from 'quill-delta';
-	import 'prismjs/themes/prism-tomorrow.css';
-	import 'prismjs/components/prism-jsx';
-	import io from 'socket.io-client';
-	import { onMount } from 'svelte';
+	import { GithubIcon, ArrowRightIcon, PlusCircleIcon, LogInIcon } from 'svelte-feather-icons';
+	import type { PageData } from './$types';
 
-	const socket = io('http://127.0.0.1:5173/');
+	export let data: PageData;
 
-	let code = "import React from 'react';";
-	let previousCode = code;
+	let value = '';
+	let creating = false;
 
-	let localChanges: Delta[] = [];
+	const toggleCreate = () => (creating = !creating);
 
-	onMount(() => {
-		socket.on('change', (change) => {
-			console.log('got socket change');
-			initialChange = new Delta(change);
-
-			applyLocalChanges();
-		});
-	});
-
-	let timeout = setTimeout(() => {}, 0);
-
-	let initialChange = new Delta();
-
-	// $: {
-	// 	code;
-	// 	onChange();
-	// }
-
-	const onChange = () => {
-		console.log('update');
-		localChanges = [
-			...localChanges,
-			new Delta().insert(previousCode).diff(new Delta().insert(code))
-		];
-		previousCode = code;
-
-		clearTimeout(timeout);
-		timeout = setTimeout(applyLocalChanges, 1000);
-	};
-
-	const applyLocalChanges = () => {
-		let final = initialChange;
-
-		if (localChanges.length) {
-			let cumulated = localChanges.reduce((prev, cur) => prev.compose(cur));
-
-			const transformed = final.transform(cumulated, true);
-
-			// initial + cumulated
-			final = final.compose(transformed);
-
-			final = cumulated.invert(new Delta()).compose(final);
-
-			console.log('cumulated', cumulated);
-			console.log('emitting transformed', transformed);
-			socket.emit('change', transformed);
-		}
-
-		// Apply final change
-		const newDoc = new Delta().insert(code).compose(final);
-
-		// If new code is empty after operations
-		if (newDoc.length() === 0) {
-			code = '';
-		} else {
-			code = (newDoc.ops[0]?.insert as string) ?? '';
-		}
-
-		previousCode = code;
-
-		initialChange = new Delta();
-		localChanges = [];
-	};
+	$: placeholder = creating ? 'Enter new project name' : 'Enter project ID';
+	$: label = creating ? 'Join Project' : 'New Project';
+	$: ActionIcon = creating ? LogInIcon : PlusCircleIcon;
+	$: formaction = creating ? 'create' : 'join';
 </script>
 
-<main class="w-full h-full flex justify-center items-center">
-	<div class="h-3/4 w-full overflow-auto text-lg bg-gray-800 text-white">
-		<SimpleCodeEditor
-			bind:value={code}
-			highlight={(code) => Prism.highlight(code, Prism.languages.jsx, 'jsx')}
-			tabSize={4}
-			on:value-change={onChange}
-			--padding="20px"
-		/>
-	</div>
+<main class="w-full h-full flex flex-col justify-center items-center">
+	<header class="text-center mb-5">
+		<h1 class="text-6xl font-bold">Code Editor</h1>
+		<h3 class="text-2xl">Made with Svelte</h3>
+	</header>
+	{#if data.session.user}
+		{@const user = data.session.user}
+		<div
+			class="text-gray-800 p-3 rounded-xl border-2 border-white bg-gray-300 flex flex-row space-x-2"
+		>
+			<img alt="Avatar" src={user.avatar} referrerpolicy="no-referrer" class="w-6 h-6" />
+			<span>{user.username}</span>
+		</div>
+
+		<button
+			type="button"
+			on:click={toggleCreate}
+			class={`mt-6 px-4 py-3 flex flex-row space-x-2 rounded-2xl border-white ${
+				creating ? 'bg-sky-400 hover:bg-sky-300' : 'bg-slate-400 hover:bg-slate-300'
+			}`}
+		>
+			<svelte:component this={ActionIcon} />
+			<span>{label}</span></button
+		>
+
+		<form method="POST" class="space-y-2 mt-5 flex flex-col">
+			<input
+				type="text"
+				bind:value
+				name="value"
+				{placeholder}
+				class="outline-none w-60 p-4 rounded-lg shadow-lg text-gray-800"
+			/>
+			{#if value.length > 0}
+				<button
+					formaction={`?/${formaction}`}
+					class="py-2 flex flex-row justify-center text-center rounded-2xl bg-slate-600 hover:bg-slate-500 border-sky-400"
+					><ArrowRightIcon /></button
+				>
+			{/if}
+		</form>
+	{:else}
+		<a
+			href="/auth"
+			class="p-3 rounded-xl border-white bg-gray-300 hover:bg-gray-400 flex flex-row space-x-2"
+		>
+			<GithubIcon size="24" />
+			<span>Login</span>
+		</a>
+	{/if}
 </main>
 
-<style global>
-	:global(html, body) {
+<style lang="postcss">
+	:global(body, html) {
 		width: 100%;
 		height: 100%;
+		display: flex;
+		justify-center: center;
+		align-items: center;
+		background: theme(backgroundColor.stone.800);
+		color: white;
 	}
 </style>

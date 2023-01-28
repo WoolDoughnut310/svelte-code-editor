@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 import mongoose, { Model, type HydratedDocument } from 'mongoose';
 const { Schema } = mongoose;
 import DirectoryObject, { type DirectoryObjectDocument } from './DirectoryObject';
@@ -7,20 +8,33 @@ export interface IProject {
 	name: string;
 }
 
-export type ProjectDocument = HydratedDocument<IProject, IProjectMethods>;
+interface IProjectVirtuals {
+	root: DirectoryObjectDocument;
+}
 
-export interface IProjectMethods {
+export type ProjectDocument = HydratedDocument<IProject, IProjectMethods, IProjectVirtuals>;
+
+interface IProjectMethods {
 	traverse(): ReturnType<typeof traverse>;
 }
 
 type Directory = DirectoryObjectDocument | DirectoryObjectDocument[] | Directory[];
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-export type ProjectModel = Model<IProject, {}, IProjectMethods>;
+export type ProjectModel = Model<IProject, {}, IProjectMethods, IProjectVirtuals>;
 
-const projectSchema = new Schema<IProject, ProjectModel, IProjectMethods>({
-	creator: { type: String, required: true },
-	name: { type: String, required: true, lowercase: true, trim: true }
+const projectSchema = new Schema<IProject, ProjectModel, IProjectMethods, {}, IProjectVirtuals>(
+	{
+		creator: { type: String, required: true },
+		name: { type: String, required: true, lowercase: true, trim: true }
+	},
+	{
+		bufferCommands: false,
+		timestamps: true
+	}
+);
+
+projectSchema.virtual('root').get(function () {
+	return new DirectoryObject({ _id: this._id, type: 'folder' });
 });
 
 projectSchema.method('traverse', async function () {
