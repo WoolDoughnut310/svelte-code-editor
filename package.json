@@ -23,6 +23,7 @@
 		"eslint": "^8.28.0",
 		"eslint-config-prettier": "^8.5.0",
 		"eslint-plugin-svelte3": "^4.0.0",
+		"flowbite-svelte": "^0.29.12",
 		"postcss": "^8.4.21",
 		"prettier": "^2.8.0",
 		"prettier-plugin-svelte": "^2.8.1",
@@ -35,8 +36,8 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"ansi-colors": "^4.1.3",
 		"dotenv": "^16.0.3",
-		"mongodb": "^4.13.0",
 		"mongoose": "^6.8.4",
 		"prismjs": "^1.29.0",
 		"quill-delta": "^5.0.0",

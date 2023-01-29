@@ -6,7 +6,7 @@ export const actions = {
 	create: async ({ request, locals }) => {
 		const data = await request.formData();
 		const value = data.get('value');
-		console.log("creating", value)
+		console.log('creating', value);
 
 		const project = new Project({
 			creator: locals.user.username,
@@ -14,14 +14,14 @@ export const actions = {
 		});
 
 		await project.save();
-		console.log(project.toJSON())
+		console.log(project.toJSON());
 
-		throw redirect(303, `/${project._id}`);
+		throw redirect(303, `/project/${project._id}`);
 	},
 	join: async ({ request }) => {
 		const data = await request.formData();
 		const value = data.get('value');
 
-		throw redirect(303, `/${value}`);
+		throw redirect(303, `/project/${value}`);
 	}
 } satisfies Actions;

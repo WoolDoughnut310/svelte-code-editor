@@ -1,7 +1,5 @@
 import Delta from 'quill-delta';
-import DirectoryObject from '../models/DirectoryObject';
 import Project from '../models/Project';
-import process from '../terminal';
 import type { Server } from './types';
 
 export default function handler(io: Server) {
@@ -15,6 +13,7 @@ export default function handler(io: Server) {
 		}
 
 		socket.data.project = project;
+		next();
 	});
 
 	io.on('connection', async (socket) => {
@@ -27,30 +26,22 @@ export default function handler(io: Server) {
 		const projectId = project._id.toString();
 		socket.join(projectId);
 
-		const terminal = {
-			cwd: '/',
-			curr: project.root
-		};
+		socket.on('change', async (id, change) => {
+			console.log('got change', id, change);
+			const file = project.files.id(id);
 
-		socket.on('terminal', async (data) => {
-			// Parse command
-			const output = await process(project, terminal, data);
-			socket.emit('terminal', output);
-		});
-
-		socket.on('change', async (fileId, change) => {
-			const fileObject = await DirectoryObject.findById(fileId);
-
-			if (!fileObject || fileObject.content === undefined) {
+			if (!file) {
 				return;
 			}
 
-			let doc = new Delta(fileObject.content);
+			let doc = new Delta(file.content);
 			doc = doc.compose(change);
 
-			fileObject.content = doc.ops;
+			file.content = doc.ops;
 
-			socket.to(projectId).emit('change', fileId, change);
+			await project.save();
+
+			socket.to(projectId).emit('change', id, change);
 		});
 	});
 }

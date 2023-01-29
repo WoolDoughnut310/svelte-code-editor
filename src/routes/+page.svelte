@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Button, Heading, Input } from 'flowbite-svelte';
 	import { GithubIcon, ArrowRightIcon, PlusCircleIcon, LogInIcon } from 'svelte-feather-icons';
 	import type { PageData } from './$types';
 
@@ -15,10 +16,10 @@
 	$: formaction = creating ? 'create' : 'join';
 </script>
 
-<main class="w-full h-full flex flex-col justify-center items-center">
+<main class="w-full dark h-full flex flex-col justify-center items-center">
 	<header class="text-center mb-5">
-		<h1 class="text-6xl font-bold">Code Editor</h1>
-		<h3 class="text-2xl">Made with Svelte</h3>
+		<Heading tag="h1">Code Editor</Heading>
+		<Heading tag="h6">Made with Svelte</Heading>
 	</header>
 	{#if data.session.user}
 		{@const user = data.session.user}
@@ -29,41 +30,22 @@
 			<span>{user.username}</span>
 		</div>
 
-		<button
-			type="button"
-			on:click={toggleCreate}
-			class={`mt-6 px-4 py-3 flex flex-row space-x-2 rounded-2xl border-white ${
-				creating ? 'bg-sky-400 hover:bg-sky-300' : 'bg-slate-400 hover:bg-slate-300'
-			}`}
-		>
+		<Button on:click={toggleCreate} outline gradient color="greenToBlue" btnClass="mt-6">
 			<svelte:component this={ActionIcon} />
-			<span>{label}</span></button
-		>
+			<span class="ml-2">{label}</span>
+		</Button>s
 
-		<form method="POST" class="space-y-2 mt-5 flex flex-col">
-			<input
-				type="text"
-				bind:value
-				name="value"
-				{placeholder}
-				class="outline-none w-60 p-4 rounded-lg shadow-lg text-gray-800"
-			/>
+		<form method="POST" action={`?/${formaction}`} class="space-y-2 mt-5 flex flex-col">
+			<Input type="text" name="value" bind:value required {placeholder} size="lg" />
 			{#if value.length > 0}
-				<button
-					formaction={`?/${formaction}`}
-					class="py-2 flex flex-row justify-center text-center rounded-2xl bg-slate-600 hover:bg-slate-500 border-sky-400"
-					><ArrowRightIcon /></button
-				>
+				<Button type="submit" gradient class="!p-2" color="tealToLime"><ArrowRightIcon /></Button>
 			{/if}
 		</form>
 	{:else}
-		<a
-			href="/auth"
-			class="p-3 rounded-xl border-white bg-gray-300 hover:bg-gray-400 flex flex-row space-x-2"
-		>
+		<Button href="auth" color="light">
 			<GithubIcon size="24" />
 			<span>Login</span>
-		</a>
+		</Button>
 	{/if}
 </main>
 

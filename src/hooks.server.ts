@@ -1,4 +1,3 @@
-import { invalidate } from '$app/navigation';
 import dbConnect from '$lib/server/dbConnect';
 import type { Handle } from '@sveltejs/kit';
 import type { RequestEvent } from './$types';
@@ -14,7 +13,7 @@ export async function getSession({ locals }: RequestEvent) {
 
 export const handle = (async ({ event, resolve }) => {
 	console.log(event.route);
-	const loggingOut = event.route.id === '/api/logout.json';
+	const loggingOut = event.route.id === '/logout';
 
 	const userString = event.cookies.get('user');
 
