@@ -1,7 +1,0 @@
-{
-	"env": {
-		"MONGODB_URI": "mongodb+srv://admin:vF8lMB187KzQQntb@cluster0.lmjch2j.mongodb.net/?retryWrites=true&w=majority",
-		"GITHUB_CLIENT_ID": "65a8345dc150fa3c831e",
-		"GITHUB_CLIENT_SECRET": "7cc8bcf63c1186a31d1f9cb33941045643135d85"
-	}
-}
