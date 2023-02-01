@@ -1,4 +1,4 @@
-import Project, { type LeanProjectDocument } from '$lib/server/models/Project';
+import { Project, ProjectClass } from '$lib/server/models';
 import { error, fail, redirect } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { EJSON } from 'bson';
@@ -15,7 +15,7 @@ export const load = (async ({ params, locals }) => {
 	}
 
 	return {
-		project: EJSON.serialize(project) as LeanProjectDocument
+		project: EJSON.serialize(project) as ProjectClass
 	};
 }) satisfies PageServerLoad;
 
@@ -62,7 +62,23 @@ export const actions = {
 		}
 
 		file.name = value;
+		await project.save();
+	},
+	deleteFile: async ({ request, params }) => {
+		const project = await Project.findById(params.project);
+		if (!project) {
+			return fail(404, { message: 'not found' });
+		}
 
+		const data = await request.formData();
+
+		const id = data.get('id');
+
+		if (typeof id !== 'string') {
+			return fail(400, { message: 'invalid id type' });
+		}
+
+		project.files.id(id)?.remove();
 		await project.save();
 	}
 } satisfies Actions;

@@ -1,51 +1,50 @@
 <script lang="ts">
-	import { SimpleCodeEditor } from 'svelte-simple-code-editor';
-	import Prism from 'prismjs';
-	import Delta from 'quill-delta';
 	import { getContext, onMount } from 'svelte';
-	import type { Client } from '$lib/server/socket/types';
-	import { page } from '$app/stores';
-	import type { PageData } from '../../routes/project/[project]/$types';
-	import 'prismjs/themes/prism-tomorrow.css';
-	import 'prismjs/components/prism-jsx';
-	import { EJSON } from 'bson';
-	import { invalidateAll } from '$app/navigation';
 
-	export let filename = '';
+	import type { Client } from '$lib/server/socket/types';
+	import type { FileClass } from '$lib/server/models';
+
+	import { SimpleCodeEditor } from 'svelte-simple-code-editor';
+	import Delta from 'quill-delta';
+
+	import Prism from 'prismjs';
+	import 'prismjs/themes/prism-tomorrow.css';
+	import { project } from '$lib/stores';
+
+	export let file: FileClass;
 
 	const socket = getContext<Client>('socket');
-	let code = "import React from 'react';";
+
+	// Code content as seen in the DOM
+	let code = file.content.length ? (file.content[0].insert as string) : '';
+
+	// Used to compare with new code, during updates
 	let previousCode = code;
 
+	// Stores all the changes applied
 	let localChanges: Delta[] = [];
 
-	const project = EJSON.deserialize($page.data.project) as PageData['project'];
+	// Before sending local updates to the server,
 
-	const file = project.files.find((file) => file.name === filename);
+	let timeout = setTimeout(() => {}, 0);
+
+	// Stores the initial change
+	// e.g. an update from the server
+	// or the last local change applied
+	let initialChange = new Delta();
 
 	onMount(() => {
-		if (!file) return;
-		code = file.content.length ? (file.content[0].insert as string) : '';
-		previousCode = code;
-
-		socket.on('connect', () => {
-			console.log('connected now');
-		});
-
-		socket.on('change', (id, change) => {
-			console.log('got socket change');
+		socket.on('change', (filename, change) => {
+			// TODO, update the store when
+			// changes for other files are received
+			if (filename !== file.name) return;
 			initialChange = new Delta(change);
 
 			applyLocalChanges();
 		});
 	});
 
-	let timeout = setTimeout(() => {}, 0);
-
-	let initialChange = new Delta();
-
 	const onChange = () => {
-		console.log('update');
 		localChanges = [
 			...localChanges,
 			new Delta().insert(previousCode).diff(new Delta().insert(code))
@@ -68,11 +67,6 @@
 			final = final.compose(transformed);
 
 			final = cumulated.invert(new Delta()).compose(final);
-
-			console.log('intial', initialChange, 'local', localChanges);
-			console.log('cumulated', cumulated);
-			console.log('emitting transformed', transformed);
-			socket.emit('change', file._id.toString(), transformed);
 		}
 
 		// Apply final change
@@ -95,7 +89,7 @@
 <div>
 	<SimpleCodeEditor
 		bind:value={code}
-		highlight={(code) => Prism.highlight(code, Prism.languages.jsx, 'jsx')}
+		highlight={(code) => Prism.highlight(code, Prism.languages.javascript, 'javascript')}
 		tabSize={4}
 		on:value-change={onChange}
 		--padding="20px"

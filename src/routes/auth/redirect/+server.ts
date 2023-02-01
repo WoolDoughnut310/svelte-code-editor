@@ -16,7 +16,6 @@ export const GET = (async ({ url, locals }) => {
 	});
 
 	if (token.error) {
-		console.log('jl', token);
 		throw error(400, token.error);
 	}
 

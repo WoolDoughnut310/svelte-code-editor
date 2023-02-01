@@ -12,7 +12,6 @@ export async function getSession({ locals }: RequestEvent) {
 }
 
 export const handle = (async ({ event, resolve }) => {
-	console.log(event.route);
 	const loggingOut = event.route.id === '/logout';
 
 	const userString = event.cookies.get('user');
