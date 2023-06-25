@@ -45,10 +45,16 @@
 	});
 
 	const onChange = () => {
+		let newDelta = new Delta([{insert: code}]);
+		
+		let previousDelta = new Delta([{insert: previousCode}]);
+		console.log(newDelta, previousDelta);
+		
 		localChanges = [
 			...localChanges,
-			new Delta().insert(previousCode).diff(new Delta().insert(code))
+			previousDelta.diff(newDelta)
 		];
+		console.log(previousCode, code);
 		previousCode = code;
 
 		clearTimeout(timeout);
@@ -57,6 +63,7 @@
 
 	const applyLocalChanges = () => {
 		let final = initialChange;
+		console.log("applying", localChanges.length);
 
 		if (localChanges.length) {
 			let cumulated = localChanges.reduce((prev, cur) => prev.compose(cur));
@@ -65,8 +72,10 @@
 
 			// initial + cumulated
 			final = final.compose(transformed);
-
+			
 			final = cumulated.invert(new Delta()).compose(final);
+			
+			socket.emit('change', file.name, transformed);
 		}
 
 		// Apply final change
@@ -86,7 +95,8 @@
 	};
 </script>
 
-<div>
+<!-- <div>
+	<textarea bind:value={code} on:change={onChange} />
 	<SimpleCodeEditor
 		bind:value={code}
 		highlight={(code) => Prism.highlight(code, Prism.languages.javascript, 'javascript')}
@@ -94,4 +104,5 @@
 		on:value-change={onChange}
 		--padding="20px"
 	/>
-</div>
+</div> -->
+<textarea class="text-white w-full h-full absolute top-0 left-0 resize-none bg-transparent" bind:value={code} on:change={onChange} />

@@ -34,6 +34,7 @@ export default function handler(io: Server) {
 
 		socket.emit('users', users);
 		socket.to(projectId).emit('join', user);
+		socket.to(projectId).emit("please");
 
 		socket.on('change', async (filename, change) => {
 			const file = project.files.find((file) => file.name === filename);

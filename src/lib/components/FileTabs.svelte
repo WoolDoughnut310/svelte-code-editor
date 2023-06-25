@@ -38,7 +38,7 @@
 	};
 </script>
 
-<Tabs contentClass="h-full overflow-auto text-lg bg-gray-800 text-white rounded-2xl relative">
+<Tabs contentClass="flex-1 overflow-auto text-lg bg-gray-800 text-white rounded-2xl relative">
 	{#each $project.files as file (file._id.toString())}
 		<TabItem open={file._id.equals(fileId)} on:click={() => (fileId = file._id)} title={file.name}>
 			<div slot="title">

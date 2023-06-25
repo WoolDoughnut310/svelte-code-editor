@@ -2,7 +2,7 @@ import { client, getUser } from '$lib/server/authClient';
 import { error, redirect } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
-export const GET = (async ({ url, locals }) => {
+export const GET = (async ({ url, locals, cookies }) => {
 	const code = url.searchParams.get('code');
 	const err = url.searchParams.get('error');
 
@@ -23,11 +23,17 @@ export const GET = (async ({ url, locals }) => {
 
 	// Get the authenticated user
 	const user = await getUser(accessToken);
-
-	locals.user = {
+	
+	cookies.set("user", JSON.stringify({
 		avatar: user.avatar_url,
 		username: user.login
-	};
+	}), {
+		path: "/",
+		httpOnly: true,
+		sameSite: "strict",
+		secure: process.env.NODE_ENV === 'production',
+		maxAge: 7_200,
+	});
 
-	throw redirect(307, '/');
+	return new Response(null, { status: 307, headers: { location: '/' } });
 }) satisfies RequestHandler;

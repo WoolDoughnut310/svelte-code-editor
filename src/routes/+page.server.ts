@@ -1,6 +1,8 @@
 import { Project } from '$lib/server/models';
 import { redirect } from '@sveltejs/kit';
 import type { Actions } from './$types';
+import { browser } from '$app/environment';
+import {goto} from "$app/navigation";
 
 export const actions = {
 	create: async ({ request, locals }) => {
@@ -14,13 +16,7 @@ export const actions = {
 		});
 
 		await project.save();
-
-		throw redirect(303, `/project/${project._id}`);
-	},
-	join: async ({ request }) => {
-		const data = await request.formData();
-		const value = data.get('value');
-
-		throw redirect(303, `/project/${value}`);
+		
+		return { id: project._id.toString() };
 	}
 } satisfies Actions;

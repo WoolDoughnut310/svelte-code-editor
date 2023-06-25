@@ -3,7 +3,10 @@ import type { UserConfig } from 'vite';
 import socketio from './src/lib/server/socket/plugin';
 
 const config: UserConfig = {
-	plugins: [sveltekit(), socketio]
+	plugins: [sveltekit(), socketio],
+	optimizeDeps: {
+	exclude: ['@sveltejs/kit']
+	}
 };
 
 export default config;

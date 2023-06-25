@@ -5,9 +5,9 @@ import { EJSON } from 'bson';
 
 export const load = (async ({ params, locals }) => {
 	const project = await Project.findById(params.project).lean();
-
+	
 	if (!locals.user) {
-		throw redirect(307, '/');
+		return new Response(null, { status: 307, headers: { location: '/' } });
 	}
 
 	if (!project) {

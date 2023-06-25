@@ -8,5 +8,6 @@ const authUrl = client.authorizeURL({
 
 export const GET = (() => {
 	console.log(authUrl);
-	throw redirect(302, authUrl);
+	// throw redirect(302, authUrl);
+	return new Response(null, { status: 302, headers: { location: authUrl } });
 }) satisfies RequestHandler;

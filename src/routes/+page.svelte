@@ -2,13 +2,45 @@
 	import { Avatar, Button, Heading, Input } from 'flowbite-svelte';
 	import { GithubIcon, ArrowRightIcon, PlusCircleIcon, LogInIcon } from 'svelte-feather-icons';
 	import type { PageData } from './$types';
-
+	import { goto } from "$app/navigation";
+	import { deserialize } from '$app/forms';
+	
 	export let data: PageData;
 
 	let value = '';
 	let creating = false;
 
 	const toggleCreate = () => (creating = !creating);
+	
+	const onSubmit = async () => {
+		let id = "";
+		console.log("submitting");
+		
+		if (creating) {
+		console.log("creating");
+			const data = new FormData();
+			data.set("value", value);
+			
+			const response = await fetch('?/create', {
+				method: 'POST',
+				body: data
+			});
+
+			const result: ActionResult = deserialize(await response.text());
+			console.log("result", result);
+
+			if (result.type === 'success') {
+				id = result.data.id;
+			}
+		} else {
+			id = value;
+		}
+		
+		if (id) {
+			const location = `/project/${id}`;
+			await goto(location);
+		}
+	}
 
 	$: placeholder = creating ? 'Enter new project name' : 'Enter project ID';
 	$: label = creating ? 'Join Project' : 'New Project';
@@ -35,14 +67,14 @@
 			<span class="ml-2">{label}</span>
 		</Button>
 
-		<form method="POST" action={`?/${formaction}`} class="space-y-2 mt-5 flex flex-col">
-			<Input type="text" name="value" bind:value required {placeholder} size="lg" />
+		<div class="space-y-2 mt-5 flex flex-col">
+			<Input type="text" bind:value required {placeholder} size="lg" />
 			{#if value.length > 0}
-				<Button type="submit" gradient class="!p-2" color="tealToLime">
+				<Button on:click={onSubmit} gradient class="!p-2" color="tealToLime">
 					<ArrowRightIcon />
 				</Button>
 			{/if}
-		</form>
+		</div>
 	{:else}
 		<Button href="auth" color="light">
 			<GithubIcon size="24" />

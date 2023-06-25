@@ -1,6 +1,6 @@
 import dbConnect from '$lib/server/dbConnect';
-import type { Handle } from '@sveltejs/kit';
 import type { RequestEvent } from './$types';
+import type { Handle } from '@sveltejs/kit';
 
 await dbConnect();
 
@@ -12,23 +12,24 @@ export async function getSession({ locals }: RequestEvent) {
 }
 
 export const handle = (async ({ event, resolve }) => {
-	const loggingOut = event.route.id === '/logout';
+	//const loggingOut = event.route.id === '/logout';
 
 	const userString = event.cookies.get('user');
 
 	event.locals.user = userString && JSON.parse(userString);
 
-	const response = await resolve(event);
-
-	const user = loggingOut ? '' : JSON.stringify(event.locals.user);
-
-	const secure = process.env.NODE_ENV === 'production';
-	const maxAge = 7_200; // (3600 seconds / hour) * 2 hours
-	const sameSite = 'Strict';
-	const cookieHeader = `user=${user || ''}; Max-Age=${maxAge}; Path=/; ${
-		secure ? 'Secure;' : ''
-	} HttpOnly; SameSite=${sameSite}`;
-	response.headers.set('Set-Cookie', cookieHeader);
-
-	return response;
+//console.log("1234");
+	return await resolve(event);
 }) satisfies Handle;
+
+import type { HandleServerError } from '@sveltejs/kit';
+ 
+ 
+export const handleError = (({ error, event }) => {
+	console.log("there is an error", error);
+console.log("the event", event);
+ 
+  return {
+    message: 'Whoops!',
+  };
+}) satisfies HandleServerError;

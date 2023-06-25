@@ -45,7 +45,7 @@
 		<UsersList />
 		<CreateFile />
 	</div>
-	<div class="w-5/6 h-3/4 relative">
+	<div class="w-5/6 h-3/4 flex flex-col relative">
 		<FileTabs {editing} {fileId} />
 	</div>
 </main>
